@@ -51,6 +51,7 @@ from .utils.desc import Desc
 from .utils import io, perm, ui
 
 
+
 def _share_array(arr_np, typecode_or_type):
     """
     Return a ctypes array allocated from shared memory with data from a
@@ -559,8 +560,9 @@ class GDMLTrain(object):
             #             'Provided dataset contains invalid lattice vectors (not invertible). Note: Only rank 3 lattice vector matrices are supported.'
             #         )
 
+            
             R_desc, R_d_desc = desc.from_R(
-                R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
+               R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
             )
 
             lev_approx_idxs, max_lev_idxs = self._lev_scores(
