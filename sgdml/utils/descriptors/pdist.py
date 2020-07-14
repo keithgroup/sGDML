@@ -5,9 +5,9 @@ import multiprocessing as mp
 from functools import partial
 from scipy import spatial
 import timeit
-import desc_library
 import os
 import sys
+#from .. import desc
 
 
 try:
@@ -18,17 +18,17 @@ else:
     _has_torch = True
 
 
-from sgdml.descriptor.desc import Desc
+
    
-    def _from_r_alias(obj, r, lat_and_inv=None):
-        """
-        Alias for instance method that allows the method to be called in a 
-        multiprocessing pool
-        """
-        return obj._from_r(r, lat_and_inv=lat_and_inv)
+def _from_r_alias(obj, r, lat_and_inv=None):
+    """
+    Alias for instance method that allows the method to be called in a 
+    multiprocessing pool
+    """
+    return obj._from_r(r, lat_and_inv=lat_and_inv)
 
 
-class pdist(Desc):
+class Pdist():
 
     def __init__(self, n_atoms, max_processes=None):
         """
