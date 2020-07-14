@@ -73,6 +73,8 @@ class pdist(Desc):
         )  # template for descriptor matrix (zeros are important)
 
         self.max_processes = max_processes
+
+
     def from_R(self, R, lat_and_inv=None, callback=None):
         """
         Generate descriptor and its Jacobian for multiple molecular geometries

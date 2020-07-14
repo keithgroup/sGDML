@@ -26,6 +26,7 @@ This module contains all routines for training GDML and sGDML models.
 
 from __future__ import print_function
 
+import os
 import sys
 import logging
 import multiprocessing as mp
@@ -265,6 +266,7 @@ class GDMLTrain(object):
                 'Optional PyTorch dependency not found! Please run \'pip install sgdml[torch]\' to install it or disable the PyTorch option.'
             )
 
+
     def __del__(self):
 
         global glob
@@ -346,6 +348,18 @@ class GDMLTrain(object):
                 If a reconstruction of the potential energy surface is requested,
                 but the energy labels are missing in the dataset.
         """
+        global use_descriptor
+
+        path = os.path.dirname(os.path.realpath(__file__))
+        try:
+            descriptor = input("Enter the name of the descriptor: ")
+            for roots, dirs, modules in os.walk(path):
+                if descriptor in modules:
+                    use_descriptor,filetype = descriptor.split(".")
+        except NameError:
+            raise ValueError('This module does not exist in the library')
+        
+
 
         if use_E and 'E' not in train_dataset:
             raise ValueError(
@@ -456,6 +470,7 @@ class GDMLTrain(object):
             'use_cprsn': use_cprsn,
             'solver_name': solver,
             'solver_tol': solver_tol,
+            'use_descriptor': use_descriptor,
         }
 
         if use_E:
@@ -539,14 +554,14 @@ class GDMLTrain(object):
             solver == 'cg'
         ):  # TODO: resuse indices, if same number of training poitns is used
 
-            desc = Desc(
+            desc = getattr(Desc,use_descriptor)(
                 n_atoms, max_processes=self._max_processes,
             )
 
             dim_d = desc.dim
 
             n_perms = task['perms'].shape[0]
-            tril_perms = np.array([desc.perm(p) for p in task['perms']])
+            tril_perms = np.array([pdist.perm(p) for p in task['perms']])
 
             perm_offsets = np.arange(n_perms)[:, None] * dim_d
             tril_perms_lin = (tril_perms + perm_offsets).flatten('F')
@@ -561,7 +576,7 @@ class GDMLTrain(object):
             #         )
 
             
-            R_desc, R_d_desc = desc.from_R(
+            R_desc, R_d_desc = getattr(Desc,descriptor).from_R(
                R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
             )
 
@@ -703,6 +718,7 @@ class GDMLTrain(object):
             'tril_perms_lin': tril_perms_lin,
             'use_E': task['use_E'],
             'use_cprsn': task['use_cprsn'],
+            'use_descriptor': task['use_descriptor'],
         }
 
         if solver_resid is not None:
@@ -804,7 +820,7 @@ class GDMLTrain(object):
 
         n_train, n_atoms = task['R_train'].shape[:2]
 
-        desc = Desc(
+        desc = getattr(Desc,use_descriptor)(
             n_atoms, max_processes=self._max_processes
         )
 

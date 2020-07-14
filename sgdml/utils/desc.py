@@ -30,25 +30,24 @@ from scipy import spatial
 import timeit
 import os
 import sys
-from .utils.descriptors import *
+#from .utils.descriptors import *
 
 
 
 
 class Desc(object):
     def __init__(self, n_atoms, max_processes=None):
+        pass
+        
+    def pdist(self, n_atoms, max_processes=None):
+        desc.pdist(n_atoms,max_processes)
 
-        path = os.path.dirname(os.path.realpath(__file__))
-    
-        try:
-            descriptor = input("Enter the name of the descriptor: ")
-            for roots, dirs, modules in os.walk(path):
-                if descriptor in modules:
-                    descriptor,filetype = descriptor.split(".")
-                    print(descriptor)
-                    new_desc = getattr(desc,descriptor)(n_atoms, max_processes)
-        except NameError:
-            raise ValueError('This module does not exist in the library')
+    def pdist_alpha(self, n_atoms, alpha, max_processes=None):
+        desc = pdist(n_atoms,alpha, max_processes)
+
+        
+
+
         
         
         
