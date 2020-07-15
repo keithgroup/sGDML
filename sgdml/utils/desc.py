@@ -30,27 +30,32 @@ from scipy import spatial
 import timeit
 import os
 import sys
-from sgdml.utils.descriptors import Pdist
-from sgdml.utils.descriptors import Pdist_alpha
+from .descriptors import Pdist
+from .descriptors import Pdist_alpha
 
 
 
 
 
 class Desc(object):
-    def __init__(self, descriptor, n_atoms = None, max_processes=None):
-        if (descriptor == 'pdist'):
-            pdist(n_atoms,max_processes)
-        if (descriptor == 'pdist_alpha'):
-            pdist_alpha(n_atoms,max_processes)
-            
-    def pdist(self, n_atoms, max_processes=None):
-        desc = Pdist(n_atoms,max_processes)
-        return desc
+    def __init__(self):
+        path = os.path.dirname(os.path.realpath(__file__))
+        try:
+            descriptor = input("Enter the name of the descriptor: ")
+            for roots, dirs, modules in os.walk(path):
+                if descriptor in modules:
+                    self.use_descriptor,filetype = descriptor.split(".")
+        except NameError:
+            raise ValueError('This module does not exist in the library')
 
-    def pdist_alpha(self, n_atoms, alpha, max_processes=None):
-        desc = Pdist_alpha(n_atoms,max_processes)
+    def create_descriptor(use_descriptor, max_processes=None, *args, **kwargs):
+        if use_descriptor == 'Pdist':
+            desc = Pdist(kwargs['n_atoms'], max_processes, *args)
+        elif use_descriptor  == 'Pdist_alpha':
+            desc = Pdist_alpha(kwargs['n_atoms'], kwargs['alpha'], max_processes, *args)
+
         return desc
+            
 
         
 

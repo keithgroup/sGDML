@@ -351,14 +351,7 @@ class GDMLTrain(object):
         """
         global use_descriptor
 
-        path = os.path.dirname(os.path.realpath(__file__))
-        try:
-            descriptor = input("Enter the name of the descriptor: ")
-            for roots, dirs, modules in os.walk(path):
-                if descriptor in modules:
-                    use_descriptor,filetype = descriptor.split(".")
-        except NameError:
-            raise ValueError('This module does not exist in the library')
+        use_descriptor = Desc()
         
 
 
@@ -554,15 +547,19 @@ class GDMLTrain(object):
         if (
             solver == 'cg'
         ):  # TODO: resuse indices, if same number of training poitns is used
-
+            """
             desc = Desc(
                 n_atoms, use_descriptor, max_processes=self._max_processes,
             )
+            """
+            desc = create_descriptor(
+                use_descriptor, n_atoms, alpha = 1, max_processes=self._max_processes
+                )
 
             dim_d = desc.dim
 
             n_perms = task['perms'].shape[0]
-            tril_perms = np.array([Pdist.perm(p) for p in task['perms']])
+            tril_perms = np.array([desc.perm(p) for p in task['perms']])
 
             perm_offsets = np.arange(n_perms)[:, None] * dim_d
             tril_perms_lin = (tril_perms + perm_offsets).flatten('F')
@@ -576,12 +573,12 @@ class GDMLTrain(object):
             #             'Provided dataset contains invalid lattice vectors (not invertible). Note: Only rank 3 lattice vector matrices are supported.'
             #         )
 
-            if (use_descriptor == "Pdist"):
+            if use_descriptor == "Pdist":
                 R_desc, R_d_desc = Pdist.from_R(
                     R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
                 )
 
-            if (use_descriptor == "Pdist_alpha"):
+            if use_descriptor == "Pdist_alpha":
                 R_desc, R_d_desc = Pdist_alpha.from_R(
                     R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
                 )
@@ -826,19 +823,24 @@ class GDMLTrain(object):
 
         n_train, n_atoms = task['R_train'].shape[:2]
 
+        """
         desc = Desc(
-            n_atoms,use_descriptor,max_processes=self._max_processes
+            n_atoms, use_descriptor, max_processes=self._max_processes
         )
+        """
+
+        desc = create_descriptor(
+                use_descriptor, n_atoms, alpha = 1, max_processes=self._max_processes
+                )
 
         sig = np.squeeze(task['sig'])
         lam = np.squeeze(task['lam'])
 
         n_perms = task['perms'].shape[0]
 
-        if (use_descriptor == "Pdist"):
-            tril_perms = np.array([Pdist.perm(p) for p in task['perms']])
-        else:
-            tril_perms = np.array([Pdist_alpha.perm(p) for p in task['perms']])
+        
+        tril_perms = np.array([desc.perm(p) for p in task['perms']])
+        
 
         dim_i = 3 * n_atoms
         dim_d = desc.dim
@@ -866,14 +868,14 @@ class GDMLTrain(object):
             #         # )
             #         pass
 
-        if (use_descriptor == "Pdist"):
+        if use_descriptor == "Pdist":
             R_desc, R_d_desc = Pdist.from_R(
                 task['R_train'].reshape(n_train, -1),
                 lat_and_inv=lat_and_inv,
                 callback=desc_callback,
             )
 
-        if (use_descriptor == "Pdist_alpha"):
+        if use_descriptor == "Pdist_alpha":
             R_desc, R_d_desc = Pdist_alpha.from_R(
                 task['R_train'].reshape(n_train, -1),
                 lat_and_inv=lat_and_inv,

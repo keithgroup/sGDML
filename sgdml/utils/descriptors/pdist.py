@@ -7,7 +7,7 @@ from scipy import spatial
 import timeit
 import os
 import sys
-#from .. import desc
+from ..desc import Desc
 
 
 try:
@@ -28,7 +28,7 @@ def _from_r_alias(obj, r, lat_and_inv=None):
     return obj._from_r(r, lat_and_inv=lat_and_inv)
 
 
-class Pdist():
+class Pdist(Desc):
 
     def __init__(self, n_atoms, max_processes=None):
         """
