@@ -30,32 +30,27 @@ from scipy import spatial
 import timeit
 import os
 import sys
-from .descriptors import Pdist
-from .descriptors import Pdist_alpha
 
 
+def create_descriptor(use_descriptor, max_processes=None, *args, **kwargs):
+
+    if use_descriptor == 'Pdist':
+        from .descriptors.pdist import Pdist
+        desc = Pdist(kwargs['n_atoms'], max_processes, *args)
+    elif use_descriptor  == 'Pdist_alpha':
+        from .descriptors.pdist_alpha import Pdist_alpha
+        desc = Pdist_alpha(kwargs['n_atoms'], max_processes, *args)
+    else:
+        raise ValueError('This module does not exist in the library')
+
+    return desc
 
 
+class Desc():
 
-class Desc(object):
     def __init__(self):
-        path = os.path.dirname(os.path.realpath(__file__))
-        try:
-            descriptor = input("Enter the name of the descriptor: ")
-            for roots, dirs, modules in os.walk(path):
-                if descriptor in modules:
-                    self.use_descriptor,filetype = descriptor.split(".")
-        except NameError:
-            raise ValueError('This module does not exist in the library')
+        pass
 
-    def create_descriptor(use_descriptor, max_processes=None, *args, **kwargs):
-        if use_descriptor == 'Pdist':
-            desc = Pdist(kwargs['n_atoms'], max_processes, *args)
-        elif use_descriptor  == 'Pdist_alpha':
-            desc = Pdist_alpha(kwargs['n_atoms'], kwargs['alpha'], max_processes, *args)
-
-        return desc
-            
 
         
 

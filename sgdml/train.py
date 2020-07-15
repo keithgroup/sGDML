@@ -48,7 +48,7 @@ else:
 
 from . import __version__
 from .predict import GDMLPredict
-from .utils.desc import Desc
+from .utils.desc import create_descriptor
 from .utils import io, perm, ui
 
 
@@ -349,11 +349,6 @@ class GDMLTrain(object):
                 If a reconstruction of the potential energy surface is requested,
                 but the energy labels are missing in the dataset.
         """
-        global use_descriptor
-
-        use_descriptor = Desc()
-        
-
 
         if use_E and 'E' not in train_dataset:
             raise ValueError(
@@ -463,8 +458,7 @@ class GDMLTrain(object):
             'use_sym': use_sym,
             'use_cprsn': use_cprsn,
             'solver_name': solver,
-            'solver_tol': solver_tol,
-            'use_descriptor': use_descriptor,
+            'solver_tol': solver_tol
         }
 
         if use_E:
@@ -547,14 +541,13 @@ class GDMLTrain(object):
         if (
             solver == 'cg'
         ):  # TODO: resuse indices, if same number of training poitns is used
-            """
-            desc = Desc(
-                n_atoms, use_descriptor, max_processes=self._max_processes,
-            )
-            """
+
+            # TODO: replace 'pdist' with use_descriptor string as argument in create_task
+            # TODO: add kwargs for descriptor (should come from use or have default values)
             desc = create_descriptor(
-                use_descriptor, n_atoms, alpha = 1, max_processes=self._max_processes
-                )
+                'pdist', max_processes=self._max_processes
+            )
+            task['desc'] = desc
 
             dim_d = desc.dim
 
@@ -573,15 +566,9 @@ class GDMLTrain(object):
             #             'Provided dataset contains invalid lattice vectors (not invertible). Note: Only rank 3 lattice vector matrices are supported.'
             #         )
 
-            if use_descriptor == "Pdist":
-                R_desc, R_d_desc = Pdist.from_R(
-                    R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
-                )
-
-            if use_descriptor == "Pdist_alpha":
-                R_desc, R_d_desc = Pdist_alpha.from_R(
-                    R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
-                )
+            R_desc, R_d_desc = desc.from_R(
+                R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
+            )
 
             lev_approx_idxs, max_lev_idxs = self._lev_scores(
                 R_desc,
@@ -823,15 +810,7 @@ class GDMLTrain(object):
 
         n_train, n_atoms = task['R_train'].shape[:2]
 
-        """
-        desc = Desc(
-            n_atoms, use_descriptor, max_processes=self._max_processes
-        )
-        """
-
-        desc = create_descriptor(
-                use_descriptor, n_atoms, alpha = 1, max_processes=self._max_processes
-                )
+        desc = task['desc']
 
         sig = np.squeeze(task['sig'])
         lam = np.squeeze(task['lam'])
@@ -868,20 +847,10 @@ class GDMLTrain(object):
             #         # )
             #         pass
 
-        if use_descriptor == "Pdist":
-            R_desc, R_d_desc = Pdist.from_R(
-                task['R_train'].reshape(n_train, -1),
-                lat_and_inv=lat_and_inv,
-                callback=desc_callback,
-            )
-
-        if use_descriptor == "Pdist_alpha":
-            R_desc, R_d_desc = Pdist_alpha.from_R(
-                task['R_train'].reshape(n_train, -1),
-                lat_and_inv=lat_and_inv,
-                callback=desc_callback,
-            )
-
+        R_desc, R_d_desc = desc.from_R(
+            task['R_train'].reshape(n_train, -1), lat_and_inv=lat_and_inv
+        )
+            
         # Which columns to include in K?
         col_idxs = np.s_[:]  # all of them
 
