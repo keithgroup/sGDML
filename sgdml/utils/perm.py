@@ -34,15 +34,20 @@ import scipy.spatial.distance
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
-from .desc import Desc
+from .desc import Desc, create_descriptor
 from . import ui
 
 glob = {}
+
+global use_descriptor
 
 
 def share_array(arr_np, typecode):
     arr = mp.RawArray(typecode, arr_np.ravel())
     return arr, arr_np.shape
+
+def perm_descriptor(use_descriptor):
+    self.use_descriptor = use_descriptor
 
 
 def _bipartite_match_wkr(i, n_train, same_z_cost):
@@ -94,7 +99,10 @@ def bipartite_match(R, z, lat_and_inv=None, max_processes=None):
 
     match_cost = np.zeros((n_train, n_train))
 
-    desc = Desc(n_atoms, max_processes=max_processes)
+    #delete the use_descriptor definition later
+    use_descriptor = "pdist"
+
+    desc = create_descriptor(use_descriptor, n_atoms, max_processes=max_processes)
 
     adj_set = np.empty((n_train, (n_atoms ** 2 - n_atoms) // 2))
     v_set = np.empty((n_train, n_atoms, n_atoms))

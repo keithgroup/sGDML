@@ -1440,6 +1440,17 @@ def main():
         help='use PyTorch for validation and test (including kernel evaluations in some numerical solvers)',
     )
 
+    parent_parser.add_argument(
+        '-desc',
+        '--descriptor',
+        metavar='<descriptor [args...]>',
+        dest='use_descriptor',
+        #type=io.parse_descriptor,
+        help='sets the descriptor to be used and their required arguments (e.g. -Pairwise Dist).',
+        default=['Pdist'],
+        #nargs='+',
+    )
+
     subparsers = parser.add_subparsers(title='commands', dest='command')
     subparsers.required = True
     parser_all = subparsers.add_parser(
@@ -1468,6 +1479,8 @@ def main():
     parser_reset = subparsers.add_parser(
         'reset', help='delete all caches and temporary files', parents=[parent_parser]
     )
+
+    
 
     for subparser in [parser_all, parser_create]:
         _add_argument_dataset(
@@ -1632,6 +1645,9 @@ def main():
         print()
         log.critical('Exception: ' + str(err))
         sys.exit()
+
+    train_descriptor(args['desc'])
+    perm_descriptor(args['desc'])
 
 
 if __name__ == "__main__":

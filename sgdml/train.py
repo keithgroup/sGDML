@@ -52,7 +52,7 @@ from .utils.desc import create_descriptor
 from .utils import io, perm, ui
 
 
-
+global use_descriptor
 
 def _share_array(arr_np, typecode_or_type):
     """
@@ -267,6 +267,9 @@ class GDMLTrain(object):
                 'Optional PyTorch dependency not found! Please run \'pip install sgdml[torch]\' to install it or disable the PyTorch option.'
             )
 
+
+    def train_descriptor(use_descriptor):
+        self.use_descriptor = use_descriptor
 
     def __del__(self):
 
@@ -545,7 +548,7 @@ class GDMLTrain(object):
             # TODO: replace 'pdist' with use_descriptor string as argument in create_task
             # TODO: add kwargs for descriptor (should come from use or have default values)
             desc = create_descriptor(
-                'pdist', max_processes=self._max_processes
+                use_descriptor, n_atoms, max_processes=self._max_processes 
             )
             task['desc'] = desc
 
