@@ -46,9 +46,6 @@ def share_array(arr_np, typecode):
     arr = mp.RawArray(typecode, arr_np.ravel())
     return arr, arr_np.shape
 
-def perm_descriptor(use_descriptor):
-    self.use_descriptor = use_descriptor
-
 
 def _bipartite_match_wkr(i, n_train, same_z_cost):
 
@@ -100,7 +97,7 @@ def bipartite_match(R, z, lat_and_inv=None, max_processes=None):
     match_cost = np.zeros((n_train, n_train))
 
     #delete the use_descriptor definition later
-    use_descriptor = "pdist"
+    use_descriptor = "Pdist"
 
     desc = create_descriptor(use_descriptor, n_atoms, max_processes=max_processes)
 

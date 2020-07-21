@@ -45,7 +45,8 @@ else:
 from . import __version__, MAX_PRINT_WIDTH
 from .predict import GDMLPredict
 from .train import GDMLTrain
-from .utils import io, ui
+from .utils import io, ui, desc
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_NAME = 'sgdml'
@@ -223,7 +224,7 @@ def _print_dataset_properties(dataset, title_str='Dataset properties'):
 
 
 def _print_task_properties(
-    use_sym, use_cprsn, use_E, use_E_cstr, title_str='Task properties'
+    use_sym, use_cprsn, use_E, use_E_cstr, descriptor, title_str='Task properties'
 ):
 
     print(ui.white_bold_str(title_str))
@@ -253,6 +254,12 @@ def _print_task_properties(
         )
     )
 
+    print(
+        '  {:<16} {}'.format(
+            'Descriptor:', descriptor[0]
+        )
+    )
+
 
 def _print_model_properties(model, title_str='Model properties'):
 
@@ -270,6 +277,12 @@ def _print_model_properties(model, title_str='Model properties'):
     _, cprsn_keep_idxs = np.unique(
         np.sort(model['perms'], axis=0), axis=1, return_index=True
     )
+
+    try:
+        print('  {:<18} {}'.format('Descriptor:', model['use_descriptor'][0]))
+    except:
+        print('  {:<18} {}'.format('Descriptor:', 'descriptor was not specified.'))
+
     n_atoms_kept = cprsn_keep_idxs.shape[0]
     print(
         '  {:<18} {}'.format(
@@ -349,6 +362,7 @@ def all(
     use_E,
     use_E_cstr,
     use_cprsn,
+    use_descriptor,
     overwrite,
     max_processes,
     use_torch,
@@ -398,6 +412,7 @@ def all(
         use_E,
         use_E_cstr,
         use_cprsn,
+        use_descriptor,
         overwrite,
         max_processes,
         task_dir,
@@ -424,6 +439,7 @@ def all(
         overwrite=False,
         max_processes=max_processes,
         use_torch=use_torch,
+        use_descriptor=use_descriptor,
         **kwargs
     )
 
@@ -443,6 +459,7 @@ def all(
         overwrite=False,
         max_processes=max_processes,
         use_torch=use_torch,
+        use_descriptor=use_descriptor,
         **kwargs
     )
 
@@ -466,6 +483,7 @@ def create(  # noqa: C901
     use_E,
     use_E_cstr,
     use_cprsn,
+    use_descriptor,
     overwrite,
     max_processes,
     task_dir=None,
@@ -487,7 +505,7 @@ def create(  # noqa: C901
         print()
 
     _print_task_properties(
-        use_sym=not gdml, use_cprsn=use_cprsn, use_E=use_E, use_E_cstr=use_E_cstr
+        use_sym=not gdml, use_cprsn=use_cprsn, use_E=use_E, use_E_cstr=use_E_cstr, descriptor=use_descriptor
     )
     print()
 
@@ -531,6 +549,7 @@ def create(  # noqa: C901
             use_cprsn=use_cprsn,
             use_E=use_E,
             use_E_cstr=use_E_cstr,
+            descriptor = use_descriptor[0],
             model0=model0,
         )
 
@@ -618,6 +637,7 @@ def create(  # noqa: C901
                 n_train,
                 valid_dataset,
                 n_valid,
+                use_descriptor,
                 sig=1,
                 use_sym=not gdml,
                 use_E=use_E,
@@ -808,7 +828,7 @@ def _online_err(err, size, n, mae_n_sum, rmse_n_sum):
 
 
 def validate(
-    model_dir, dataset, overwrite, max_processes, use_torch, command=None, **kwargs
+    model_dir, dataset, overwrite, max_processes, use_torch, use_descriptor, command=None, **kwargs
 ):
 
     dataset_path_extracted, dataset_extracted = dataset
@@ -827,6 +847,7 @@ def validate(
         overwrite,
         max_processes,
         use_torch,
+        use_descriptor,
         command,
         **kwargs
     )
@@ -859,6 +880,7 @@ def test(
     overwrite,
     max_processes,
     use_torch,
+    use_descriptor,
     command=None,
     **kwargs
 ):  # noqa: C901
@@ -1445,10 +1467,10 @@ def main():
         '--descriptor',
         metavar='<descriptor [args...]>',
         dest='use_descriptor',
-        #type=io.parse_descriptor,
+        type=io.parse_descriptor,
         help='sets the descriptor to be used and their required arguments (e.g. -Pairwise Dist).',
         default=['Pdist'],
-        #nargs='+',
+        nargs='+',
     )
 
     subparsers = parser.add_subparsers(title='commands', dest='command')
@@ -1646,8 +1668,14 @@ def main():
         log.critical('Exception: ' + str(err))
         sys.exit()
 
-    train_descriptor(args['desc'])
-    perm_descriptor(args['desc'])
+    
+    use_descriptor = args['use_descriptor'][0]
+    desc_args = []
+    for args in args['use_descriptor'][1:]:
+        desc_args.append(args)
+
+    GDMLTrain.initialize_descriptor(use_descriptor, desc_args)
+    
 
 
 if __name__ == "__main__":

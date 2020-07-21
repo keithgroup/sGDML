@@ -43,7 +43,7 @@ else:
 import numpy as np
 
 from . import __version__
-from .utils.desc import Desc
+from .utils.desc import Desc, create_descriptor
 
 
 def share_array(arr_np):
@@ -280,7 +280,10 @@ class GDMLPredict(object):
 
         self.n_atoms = model['z'].shape[0]
 
-        self.desc = Desc(self.n_atoms, max_processes=max_processes)
+        self.desc = create_descriptor(
+            model['use_descriptor'], self.n_atoms, max_processes = max_processes
+        )
+        #self.desc = Desc(self.n_atoms, max_processes=max_processes)
         glob['desc_func'] = self.desc
 
         self.lat_and_inv = (

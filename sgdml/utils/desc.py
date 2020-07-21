@@ -32,27 +32,37 @@ import os
 import sys
 
 
-def create_descriptor(use_descriptor, max_processes=None, *args, **kwargs):
-
+def create_descriptor(use_descriptor, n_atoms, max_processes=None, *args):
     if use_descriptor == 'Pdist':
         from .descriptors.pdist import Pdist
-        desc = Pdist(args['n_atoms'], max_processes, *args)
+        desc = Pdist(n_atoms, max_processes)
     elif use_descriptor  == 'Pdist_alpha':
         from .descriptors.pdist_alpha import Pdist_alpha
-        desc = Pdist_alpha(args['n_atoms'], max_processes, *args)
+        desc = Pdist_alpha(n_atoms, max_processes, args['alpha'])
+    else:
+        raise ValueError('This module does not exist in the library')
+
+    return desc
+    
+
+class Desc():
+    def __init__(self):
+        pass
+
+"""        
+def create_descriptor(use_descriptor, n_atoms, max_processes=None, *args):
+    if use_descriptor == 'Pdist':
+        from .descriptors.pdist import Pdist
+        desc = Pdist(n_atoms, max_processes)
+    elif use_descriptor  == 'Pdist_alpha':
+        from .descriptors.pdist_alpha import Pdist_alpha
+        desc = Pdist_alpha(n_atoms, max_processes, args['alpha'])
     else:
         raise ValueError('This module does not exist in the library')
 
     return desc
 
-
-class Desc():
-
-    def __init__(self):
-        pass
-
-
-        
+"""
 
 
         

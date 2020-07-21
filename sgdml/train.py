@@ -50,6 +50,7 @@ from . import __version__
 from .predict import GDMLPredict
 from .utils.desc import create_descriptor
 from .utils import io, perm, ui
+from .utils.descriptors.pdist import Pdist
 
 
 global use_descriptor
@@ -267,9 +268,11 @@ class GDMLTrain(object):
                 'Optional PyTorch dependency not found! Please run \'pip install sgdml[torch]\' to install it or disable the PyTorch option.'
             )
 
-
-    def train_descriptor(use_descriptor):
-        self.use_descriptor = use_descriptor
+    def initialize_descriptor(use_descriptor, *args):
+        use_descriptor = use_descriptor
+        if (use_descriptor == 'Pdist_alpha'):
+            alpha = args[0]
+        
 
     def __del__(self):
 
@@ -282,6 +285,7 @@ class GDMLTrain(object):
         n_train,
         valid_dataset,
         n_valid,
+        use_descriptor,
         sig,
         lam=1e-15,
         use_sym=True,
@@ -460,6 +464,7 @@ class GDMLTrain(object):
             'use_E_cstr': use_E_cstr,
             'use_sym': use_sym,
             'use_cprsn': use_cprsn,
+            'use_descriptor': use_descriptor,
             'solver_name': solver,
             'solver_tol': solver_tol
         }
@@ -548,7 +553,7 @@ class GDMLTrain(object):
             # TODO: replace 'pdist' with use_descriptor string as argument in create_task
             # TODO: add kwargs for descriptor (should come from use or have default values)
             desc = create_descriptor(
-                use_descriptor, n_atoms, max_processes=self._max_processes 
+                task['use_descriptor'], n_atoms, max_processes=self._max_processes
             )
             task['desc'] = desc
 
@@ -569,7 +574,7 @@ class GDMLTrain(object):
             #             'Provided dataset contains invalid lattice vectors (not invertible). Note: Only rank 3 lattice vector matrices are supported.'
             #         )
 
-            R_desc, R_d_desc = desc.from_R(
+            R_desc, R_d_desc = Pdist.from_R(
                 R_train.reshape(n_train, -1), lat_and_inv=lat_and_inv
             )
 
@@ -813,15 +818,19 @@ class GDMLTrain(object):
 
         n_train, n_atoms = task['R_train'].shape[:2]
 
-        desc = task['desc']
+        desc = create_descriptor(
+            task['use_descriptor'], n_atoms, max_processes=self._max_processes
+        )
 
         sig = np.squeeze(task['sig'])
         lam = np.squeeze(task['lam'])
 
         n_perms = task['perms'].shape[0]
 
-        
+        #if task['use_descriptor'] == 'Pdist':
         tril_perms = np.array([desc.perm(p) for p in task['perms']])
+        #else:
+        #    tril_perms = np.array([Pdist_alpha.perm(p) for p in task['perms']])
         
 
         dim_i = 3 * n_atoms

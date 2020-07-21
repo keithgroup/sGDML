@@ -29,7 +29,7 @@ def _from_r_alias(obj, r, lat_and_inv=None):
 
 class Pdist_alpha(Desc):
 
-    def __init__(self, n_atoms, max_processes=None):
+    def __init__(self, n_atoms, max_processes=None, *args):
         """
         Generate descriptors and their Jacobians for molecular geometries,
         including support for periodic boundary conditions.
@@ -44,7 +44,7 @@ class Pdist_alpha(Desc):
                         effect if `use_torch=True`.
         """
         
-
+        self.alpha = args['alpha']
         self.n_atoms = n_atoms
         self.dim_i = 3 * n_atoms
 
