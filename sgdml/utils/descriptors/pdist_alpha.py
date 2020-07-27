@@ -44,7 +44,7 @@ class Pdist_alpha(Desc):
                         effect if `use_torch=True`.
         """
         
-        self.alpha = args['alpha']
+        self.alpha = args[0]
         self.n_atoms = n_atoms
         self.dim_i = 3 * n_atoms
 
@@ -293,7 +293,7 @@ class Pdist_alpha(Desc):
         if r.ndim == 1:
             r = r[None, :]
 
-        return 1.0 / (pdist[np.tril_indices(self.n_atoms, -1)]) ** alpha
+        return 1.0 / ((pdist[np.tril_indices(self.n_atoms, -1)]) ** alpha)
 
     def _r_to_d_desc(self, r, pdist, lat_and_inv=None):
         """

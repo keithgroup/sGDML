@@ -42,6 +42,7 @@ glob = {}
 global use_descriptor
 
 
+
 def share_array(arr_np, typecode):
     arr = mp.RawArray(typecode, arr_np.ravel())
     return arr, arr_np.shape
@@ -84,7 +85,7 @@ def _bipartite_match_wkr(i, n_train, same_z_cost):
     return match_perms
 
 
-def bipartite_match(R, z, lat_and_inv=None, max_processes=None):
+def bipartite_match(use_descriptor, R, z, lat_and_inv=None, max_processes=None):
 
     global glob
 
@@ -95,10 +96,7 @@ def bipartite_match(R, z, lat_and_inv=None, max_processes=None):
     same_z_cost[same_z_cost != 0] = 1
 
     match_cost = np.zeros((n_train, n_train))
-
-    #delete the use_descriptor definition later
-    use_descriptor = "Pdist"
-
+    
     desc = create_descriptor(use_descriptor, n_atoms, max_processes=max_processes)
 
     adj_set = np.empty((n_train, (n_atoms ** 2 - n_atoms) // 2))
@@ -184,12 +182,12 @@ def complete_sym_group(perms):
     return perms
 
 
-def find_perms(R, z, lat_and_inv=None, max_processes=None):
+def find_perms(use_descriptor, R, z, lat_and_inv=None, max_processes=None):
 
     n_atoms = len(z)
 
     # find matching for all pairs
-    match_perms_all, match_cost = bipartite_match(R, z, lat_and_inv, max_processes)
+    match_perms_all, match_cost = bipartite_match(use_descriptor, R, z, lat_and_inv, max_processes)
 
     # remove inconsistencies
     match_perms = sync_perm_mat(match_perms_all, match_cost, n_atoms)

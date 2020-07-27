@@ -45,7 +45,7 @@ else:
 from . import __version__, MAX_PRINT_WIDTH
 from .predict import GDMLPredict
 from .train import GDMLTrain
-from .utils import io, ui, desc
+from .utils import io, ui, desc, perm
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1669,14 +1669,16 @@ def main():
         sys.exit()
 
     
-    use_descriptor = args['use_descriptor'][0]
+    use_descriptor = args['use_descriptor']
+
+    """
     desc_args = []
     for args in args['use_descriptor'][1:]:
         desc_args.append(args)
 
-    GDMLTrain.initialize_descriptor(use_descriptor, desc_args)
-    
-
+    desc = GDMLTrain(use_descriptor,desc_args)
+    desc = GDMLTrain.initialize_descriptor(use_descriptor, desc_args)
+    """
 
 if __name__ == "__main__":
     main()

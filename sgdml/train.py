@@ -53,8 +53,6 @@ from .utils import io, perm, ui
 from .utils.descriptors.pdist import Pdist
 
 
-global use_descriptor
-
 def _share_array(arr_np, typecode_or_type):
     """
     Return a ctypes array allocated from shared memory with data from a
@@ -262,18 +260,14 @@ class GDMLTrain(object):
 
         self._max_processes = max_processes
         self._use_torch = use_torch
+        
 
         if use_torch and not _has_torch:
             raise ImportError(
                 'Optional PyTorch dependency not found! Please run \'pip install sgdml[torch]\' to install it or disable the PyTorch option.'
             )
 
-    def initialize_descriptor(use_descriptor, *args):
-        use_descriptor = use_descriptor
-        if (use_descriptor == 'Pdist_alpha'):
-            alpha = args[0]
         
-
     def __del__(self):
 
         global glob
@@ -356,6 +350,7 @@ class GDMLTrain(object):
                 If a reconstruction of the potential energy surface is requested,
                 but the energy labels are missing in the dataset.
         """
+
 
         if use_E and 'E' not in train_dataset:
             raise ValueError(
@@ -468,6 +463,7 @@ class GDMLTrain(object):
             'solver_name': solver,
             'solver_tol': solver_tol
         }
+        
 
         if use_E:
             task['E_train'] = train_dataset['E'][idxs_train]
@@ -504,7 +500,7 @@ class GDMLTrain(object):
                     )
 
                 task['perms'] = perm.find_perms(
-                    R_train_sync_mat, train_dataset['z'], lat_and_inv=lat_and_inv, max_processes=self._max_processes,
+                    use_descriptor, R_train_sync_mat, train_dataset['z'], lat_and_inv=lat_and_inv, max_processes=self._max_processes,
                 )
             else:
                 task['perms'] = np.arange(train_dataset['R'].shape[1])[
@@ -555,6 +551,7 @@ class GDMLTrain(object):
             desc = create_descriptor(
                 task['use_descriptor'], n_atoms, max_processes=self._max_processes
             )
+
             task['desc'] = desc
 
             dim_d = desc.dim
