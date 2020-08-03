@@ -38,7 +38,7 @@ def create_descriptor(use_descriptor, n_atoms, max_processes=None, *args):
         desc = Pdist_alpha(n_atoms, max_processes, alpha = 1.0)
     elif use_descriptor[0]  == 'Pdist_alpha':
         from .descriptors.pdist_alpha import Pdist_alpha
-        use_descriptor = use_descriptor[1].astype(np.float)
+        use_descriptor = float(use_descriptor[1])
         desc = Pdist_alpha(n_atoms, max_processes, alpha = use_descriptor)
     else:
         raise ValueError('This module does not exist in the library')
