@@ -29,7 +29,7 @@ def _from_r_alias(obj, r, lat_and_inv=None):
 
 class Pdist_alpha(Desc):
 
-    def __init__(self, n_atoms, max_processes=None, *args):
+    def __init__(self, n_atoms, max_processes=None, *args, **kwargs):
         """
         Generate descriptors and their Jacobians for molecular geometries,
         including support for periodic boundary conditions.
@@ -44,7 +44,7 @@ class Pdist_alpha(Desc):
                         effect if `use_torch=True`.
         """
         
-        self.alpha = args[0]
+        self.alpha = kwargs['alpha']
         self.n_atoms = n_atoms
         self.dim_i = 3 * n_atoms
 
@@ -269,7 +269,7 @@ class Pdist_alpha(Desc):
 
         return sp.spatial.distance.squareform(pdist, checks=False)
 
-    def _r_to_desc(self, r, pdist, alpha = 1):
+    def _r_to_desc(self, r, pdist):
         """
         Generate descriptor for a set of atom positions in Cartesian
         coordinates.
@@ -293,7 +293,7 @@ class Pdist_alpha(Desc):
         if r.ndim == 1:
             r = r[None, :]
 
-        return 1.0 / ((pdist[np.tril_indices(self.n_atoms, -1)]) ** alpha)
+        return (1.0 / ((pdist[np.tril_indices(self.n_atoms, -1)]) ** self.alpha))
 
     def _r_to_d_desc(self, r, pdist, lat_and_inv=None):
         """
@@ -331,7 +331,7 @@ class Pdist_alpha(Desc):
                 pdiff.reshape(self.n_atoms ** 2, 3), lat_and_inv
             ).reshape(self.n_atoms, self.n_atoms, 3)
 
-        d_desc_elem = pdiff / (pdist ** 3)[:, :, None]
+        d_desc_elem = (self.alpha * pdiff) / ((pdist ** 3)[:, :, None] ** (self.alpha + 2.0))
         self.d_desc[self.d_desc_mask.ravel(), self.A, :] = d_desc_elem[
             self.M, self.A, :
         ]
