@@ -471,7 +471,6 @@ class GDMLTrain(object):
         lat_and_inv = None
         if 'lattice' in train_dataset:
             task['lattice'] = train_dataset['lattice']
-
             
             #if 'lattice' in train_dataset:
             try:
@@ -499,8 +498,12 @@ class GDMLTrain(object):
                         )
                     )
 
+                # TOOD: PBCs disabled when matching (for now).
+                #task['perms'] = perm.find_perms(
+                #    R_train_sync_mat, train_dataset['z'], lat_and_inv=lat_and_inv, max_processes=self._max_processes,
+                #)
                 task['perms'] = perm.find_perms(
-                    use_descriptor, R_train_sync_mat, train_dataset['z'], lat_and_inv=lat_and_inv, max_processes=self._max_processes,
+                    use_descriptor, R_train_sync_mat, train_dataset['z'], lat_and_inv=None, max_processes=self._max_processes,
                 )
             else:
                 task['perms'] = np.arange(train_dataset['R'].shape[1])[
@@ -918,9 +921,9 @@ class GDMLTrain(object):
 
         # Generate label vector.
         E_train_mean = None
-        y = task['F_train'].ravel()
+        y = task['F_train'].ravel().copy()
         if task['use_E'] and task['use_E_cstr']:
-            E_train = task['E_train'].ravel()
+            E_train = task['E_train'].ravel().copy()
             E_train_mean = np.mean(E_train)
 
             y = np.hstack((y, -E_train + E_train_mean))
@@ -938,6 +941,7 @@ class GDMLTrain(object):
             progr_callback=ker_progr_callback,
             col_idxs=col_idxs,
         )
+
 
         # test
 
@@ -1091,11 +1095,6 @@ class GDMLTrain(object):
             np.column_stack((E_pred, np.ones(E_ref.shape))), E_ref, rcond=-1
         )[0][0]
         corrcoef = np.corrcoef(E_ref, E_pred)[0, 1]
-
-        # import matplotlib.pyplot as plt
-        # plt.plot(E_ref-np.mean(E_ref))
-        # plt.plot(np.sort(E_pred-np.mean(E_pred)))
-        # plt.show()
 
         if np.sign(e_fact) == -1:
             self.log.warning(
@@ -1438,7 +1437,7 @@ class GDMLTrain(object):
                 uniq_all,
                 min(max_bin_reduction, np.abs(reduced_cnts_delta)),
                 p=(reduced_cnts - 1) / np.sum(reduced_cnts - 1, dtype=float),
-                replace=False,
+                replace=True,
             )
             uniq_outstanding, cnts_outstanding = np.unique(
                 outstanding, return_counts=True
@@ -1660,7 +1659,7 @@ class GDMLTrain(object):
         while retry:
             try:
 
-                L, lower = sp.linalg.cho_factor(M, overwrite_a=True, check_finite=False)
+                L, lower = sp.linalg.cho_factor(M, overwrite_a=False, check_finite=False)
 
                 n_retries += 1
                 retry = False
@@ -1680,4 +1679,3 @@ class GDMLTrain(object):
                     raise e
 
         return L, lower
-
